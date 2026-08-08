@@ -5,7 +5,7 @@ define('DB_USER', 'root');
 define('DB_PASS', '');
 define('DB_NAME', 'sistem_pakar_cf');
 define('APP_NAME', 'SiPakar CF');
-define('APP_VERSION', '1.0.0');
+define('APP_VERSION', '2.0.0');
 define('ADMIN_USER', 'admin');
 define('ADMIN_PASS', 'admin123');
 
@@ -94,7 +94,7 @@ function katClass(string $kat): string {
     return $map[$kat] ?? 'kat-komunikasi';
 }
 
-// ── Helper: icon kategori (Font Awesome HTML) ──
+// ── Helper: icon kategori ──
 function katIcon(string $kat): string {
     $map = [
         'Perubahan Komunikasi'          => '<i class="fas fa-comments"></i>',
@@ -107,7 +107,7 @@ function katIcon(string $kat): string {
     return $map[$kat] ?? '<i class="fas fa-thumbtack"></i>';
 }
 
-// ── Helper: warna CF bar berdasarkan nilai ──
+// ── Helper: warna CF bar ──
 function cfBarClass(float $cf): string {
     if ($cf <= 0) return 'cf-bar negative';
     if ($cf >= 0.70) return 'cf-bar green';
@@ -115,7 +115,7 @@ function cfBarClass(float $cf): string {
     return 'cf-bar';
 }
 
-// ── Helper: risk badge background color ──
+// ── Helper: risk badge color ──
 function riskColor(string $level): string {
     $map = [
         'Risiko Sangat Rendah' => '#059669',
@@ -127,8 +127,20 @@ function riskColor(string $level): string {
     return $map[$level] ?? '#475569';
 }
 
-// ── Session helper: cek login admin ──
+// ── Session: cek login admin ──
 function isAdmin(): bool {
     return isset($_SESSION['admin_logged_in']) && $_SESSION['admin_logged_in'] === true;
+}
+
+// ── Session: cek login user ──
+function isUser(): bool {
+    return isset($_SESSION['user_logged_in']) && $_SESSION['user_logged_in'] === true;
+}
+
+// ── Session: nama tampil ──
+function currentUserName(): string {
+    if (isAdmin()) return 'Administrator';
+    if (isUser()) return $_SESSION['user_nama'] ?? 'Pengguna';
+    return 'Tamu';
 }
 ?>

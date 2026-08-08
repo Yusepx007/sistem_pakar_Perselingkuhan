@@ -17,6 +17,19 @@ require_once 'includes/header.php';
 <!-- HERO -->
 <section class="hero animate-up">
     <div class="hero-eyebrow">Sistem Pakar Berbasis Web</div>
+    <?php if (isUser()): ?>
+    <div style="margin-bottom:12px;">
+        <span class="badge-pill" style="background:rgba(59,130,246,0.2);border-color:rgba(59,130,246,0.4);">
+            <i class="fas fa-user"></i> Halo, <?= htmlspecialchars($_SESSION['user_nama'] ?? 'Pengguna') ?>!
+        </span>
+    </div>
+    <?php elseif (isAdmin()): ?>
+    <div style="margin-bottom:12px;">
+        <span class="badge-pill" style="background:rgba(244,63,94,0.2);border-color:rgba(244,63,94,0.4);color:#fda4af;">
+            <i class="fas fa-shield-halved"></i> Mode Administrator
+        </span>
+    </div>
+    <?php endif; ?>
     <h1>Identifikasi Risiko<br>Perselingkuhan</h1>
     <p>
         Analisis faktor risiko hubungan secara objektif menggunakan metode
@@ -29,9 +42,16 @@ require_once 'includes/header.php';
         <span class="badge-pill"><i class="fas fa-shield-alt"></i> Privasi Terjaga &amp; Anonim</span>
         <span class="badge-pill"><i class="fas fa-bolt"></i> Analisis Instan</span>
     </div>
-    <a href="pages/konsultasi.php" class="btn btn-primary btn-lg">
-        <i class="fas fa-stethoscope"></i> Mulai Konsultasi &rarr;
-    </a>
+    <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap;">
+        <a href="pages/konsultasi.php" class="btn btn-primary btn-lg">
+            <i class="fas fa-stethoscope"></i> Mulai Konsultasi &rarr;
+        </a>
+        <?php if (!isUser() && !isAdmin()): ?>
+        <a href="auth/login.php" class="btn btn-ghost btn-lg">
+            <i class="fas fa-right-to-bracket"></i> Login
+        </a>
+        <?php endif; ?>
+    </div>
 </section>
 
 <!-- STATISTIK -->
@@ -151,10 +171,6 @@ require_once 'includes/header.php';
             </tbody>
         </table>
     </div>
-    <div style="text-align:center;margin-top:20px;display:flex;justify-content:center;gap:12px;">
-        <a href="pages/gejala.php"     class="btn btn-ghost"><i class="fas fa-list"></i> Lihat Semua 33 Gejala &rarr;</a>
-        <a href="pages/konsultasi.php" class="btn btn-primary"><i class="fas fa-stethoscope"></i> Mulai Konsultasi</a>
-    </div>
 </div>
 
 <!-- INTERPRETASI NILAI CF -->
@@ -180,14 +196,6 @@ require_once 'includes/header.php';
             <div style="font-size:0.80rem;color:var(--text-muted);margin-top:8px;line-height:1.5;"><?= $lv['desc'] ?></div>
         </div>
         <?php endforeach; ?>
-    </div>
-</div>
-
-<!-- DISCLAIMER -->
-<div class="alert alert-warning" style="animation-delay:0.3s">
-    <span class="alert-icon"><i class="fas fa-triangle-exclamation"></i></span>
-    <div>
-        <strong>Disclaimer Penting:</strong> Sistem ini hanya alat bantu evaluasi awal dan <strong>tidak menggantikan</strong> konsultasi langsung dengan psikolog, konselor, atau tenaga profesional. Hasil analisis tidak dapat dijadikan bukti, tuduhan, atau dasar pengambilan keputusan hukum.
     </div>
 </div>
 

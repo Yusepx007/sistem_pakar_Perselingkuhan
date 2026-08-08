@@ -11,7 +11,11 @@ $error = '';
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $gejalaIds    = $_POST['gejala'] ?? [];
     $namaPengguna = trim($_POST['nama_pengguna'] ?? '');
-    $namaPengguna = $namaPengguna === '' ? 'Anonim' : htmlspecialchars($namaPengguna);
+    if ($namaPengguna === '') {
+        $namaPengguna = isUser() ? ($_SESSION['user_nama'] ?? 'Pengguna') : 'Anonim';
+    } else {
+        $namaPengguna = htmlspecialchars($namaPengguna);
+    }
 
     if (empty($gejalaIds)) {
         $error = 'Silakan pilih minimal satu gejala terlebih dahulu sebelum menganalisis.';
@@ -31,7 +35,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         $gejalaStr = implode(',', array_column($gejalaDipilih, 'kode'));
         $stmt = $conn->prepare("INSERT INTO konsultasi (nama_pengguna, gejala_dipilih, nilai_cf, level_risiko) VALUES (?,?,?,?)");
-        $stmt->bind_param("sdss", $namaPengguna, $cfFinal, $info['level'], $gejalaStr);
+        $stmt->bind_param("ssds", $namaPengguna, $gejalaStr, $cfFinal, $info['level']);
         $stmt->execute();
 
         $hasil = [
@@ -142,7 +146,6 @@ require_once '../includes/header.php';
 
 <div style="text-align:center;margin-top:8px;display:flex;justify-content:center;gap:12px;flex-wrap:wrap;">
     <a href="konsultasi.php" class="btn btn-primary"><i class="fas fa-rotate"></i> Konsultasi Ulang</a>
-    <a href="riwayat.php"    class="btn btn-ghost"><i class="fas fa-list"></i> Lihat Riwayat</a>
     <a href="../index.php"   class="btn btn-ghost"><i class="fas fa-house"></i> Beranda</a>
 </div>
 
@@ -155,9 +158,11 @@ require_once '../includes/header.php';
             Identitas Pengguna (Opsional)
         </div>
         <div class="nama-input">
-            <label for="nama_pengguna">Nama Anda <span style="color:var(--text-muted);font-weight:400;">(boleh dikosongkan, default: Anonim)</span></label>
+            <label for="nama_pengguna">Nama Anda <span style="color:var(--text-muted);font-weight:400;"><?= isUser() ? '(otomatis terisi nama akun Anda)' : '(boleh dikosongkan, default: Anonim)' ?></span></label>
             <input type="text" id="nama_pengguna" name="nama_pengguna" class="form-input"
-                   placeholder="Contoh: Anonim" maxlength="100" autocomplete="off">
+                   placeholder="<?= isUser() ? htmlspecialchars($_SESSION['user_nama'] ?? '') : 'Contoh: Anonim' ?>"
+                   value="<?= isUser() ? htmlspecialchars($_SESSION['user_nama'] ?? '') : '' ?>"
+                   maxlength="100" autocomplete="off">
         </div>
     </div>
 
@@ -215,12 +220,7 @@ require_once '../includes/header.php';
 
 </form>
 
-<div class="alert alert-warning">
-    <span class="alert-icon"><i class="fas fa-triangle-exclamation"></i></span>
-    <div>
-        <strong>Disclaimer:</strong> Hasil analisis ini bukan diagnosa medis atau psikologis. Sistem ini hanya alat bantu identifikasi awal dan tidak menggantikan peran konselor atau psikolog profesional. Jawablah sesuai kondisi yang benar-benar Anda amati.
-    </div>
-</div>
+
 <?php endif; ?>
 
 <script>

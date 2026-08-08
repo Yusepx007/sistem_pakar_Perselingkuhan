@@ -1,8 +1,6 @@
 <?php
 session_start();
-$_SESSION['admin_logged_in'] = false;
-unset($_SESSION['admin_logged_in']);
+$_SESSION = [];
 session_destroy();
-header('Location: login.php?pesan=logout');
+header('Location: ../index.php');
 exit;
-?>

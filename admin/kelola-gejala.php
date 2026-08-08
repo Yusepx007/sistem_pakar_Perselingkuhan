@@ -8,9 +8,8 @@ if (!isAdmin()) {
 }
 
 $pageTitle   = 'Kelola Data Gejala';
-$activePage  = 'admin';
+$activePage  = 'admin-gejala';
 $base        = '../';
-$isAdminPage = true;
 
 $pesan = '';
 $error = '';

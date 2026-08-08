@@ -108,8 +108,7 @@ require_once '../includes/header.php';
                 </tr>
             </tbody>
         </table>
-        <p style="margin-top:14px;font-size:0.8rem;color:var(--text-muted);">Sumber: Shortliffe (1976), diolah peneliti</p>
-    </div>
+        
 
     <div class="card">
         <div class="card-title">
@@ -160,13 +159,6 @@ require_once '../includes/header.php';
         </div>
     </div>
 </div>
-</div>
-
-<div class="alert alert-warning">
-    <span class="alert-icon"><i class="fas fa-triangle-exclamation"></i></span>
-    <div>
-        <strong>Disclaimer Penting:</strong> Sistem ini hanya sebagai alat bantu evaluasi awal dan <strong>tidak menggantikan</strong> konsultasi langsung dengan psikolog, konselor, atau tenaga profesional lainnya. Hasil analisis tidak dapat dijadikan bukti, tuduhan, atau dasar pengambilan keputusan hukum apapun.
-    </div>
 </div>
 
 <?php require_once '../includes/footer.php'; ?>
