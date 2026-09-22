@@ -43,12 +43,29 @@ $base       = '../';
 
 $userName = $_SESSION['user_nama'] ?? '';
 $userUser = $_SESSION['user_username'] ?? '';
+$userId   = (int)($_SESSION['user_id'] ?? 0);
+
+// Helper: buat kondisi WHERE yang tepat (prioritaskan user_id)
+function buildUserWhere(mysqli $conn, int $userId, string $userName, string $userUser): string {
+    if ($userId > 0) {
+        return "user_id = $userId";
+    }
+    $un = $conn->real_escape_string($userName);
+    $uu = $conn->real_escape_string($userUser);
+    return "(nama_pengguna = '$un' OR nama_pengguna = '$uu')";
+}
+$whereUser = buildUserWhere($conn, $userId, $userName, $userUser);
 
 // Hapus record riwayat sendiri
 if (isset($_GET['hapus']) && is_numeric($_GET['hapus'])) {
     $idHapus = (int)$_GET['hapus'];
-    $stmtHapus = $conn->prepare("DELETE FROM konsultasi WHERE id = ? AND (nama_pengguna = ? OR nama_pengguna = ?)");
-    $stmtHapus->bind_param("iss", $idHapus, $userName, $userUser);
+    if ($userId > 0) {
+        $stmtHapus = $conn->prepare("DELETE FROM konsultasi WHERE id = ? AND user_id = ?");
+        $stmtHapus->bind_param("ii", $idHapus, $userId);
+    } else {
+        $stmtHapus = $conn->prepare("DELETE FROM konsultasi WHERE id = ? AND (nama_pengguna = ? OR nama_pengguna = ?)");
+        $stmtHapus->bind_param("iss", $idHapus, $userName, $userUser);
+    }
     $stmtHapus->execute();
     header('Location: riwayat.php?pesan=hapus');
     exit;
@@ -57,20 +74,11 @@ if (isset($_GET['hapus']) && is_numeric($_GET['hapus'])) {
 $pesan = $_GET['pesan'] ?? '';
 
 // Query riwayat khusus user ini
-$stmtCount = $conn->prepare("SELECT COUNT(*) AS n FROM konsultasi WHERE (nama_pengguna = ? OR nama_pengguna = ?)");
-$stmtCount->bind_param("ss", $userName, $userUser);
-$stmtCount->execute();
-$totalRiwayat = $stmtCount->get_result()->fetch_assoc()['n'];
+$totalRiwayat = $conn->query("SELECT COUNT(*) AS n FROM konsultasi WHERE $whereUser")->fetch_assoc()['n'];
 
-$stmtAvg = $conn->prepare("SELECT AVG(nilai_cf) AS avg_cf, MAX(nilai_cf) AS max_cf FROM konsultasi WHERE (nama_pengguna = ? OR nama_pengguna = ?)");
-$stmtAvg->bind_param("ss", $userName, $userUser);
-$stmtAvg->execute();
-$statUser = $stmtAvg->get_result()->fetch_assoc();
+$statUser = $conn->query("SELECT AVG(nilai_cf) AS avg_cf, MAX(nilai_cf) AS max_cf FROM konsultasi WHERE $whereUser")->fetch_assoc();
 
-$stmtList = $conn->prepare("SELECT * FROM konsultasi WHERE (nama_pengguna = ? OR nama_pengguna = ?) ORDER BY tanggal DESC");
-$stmtList->bind_param("ss", $userName, $userUser);
-$stmtList->execute();
-$riwayatList = $stmtList->get_result();
+$riwayatList = $conn->query("SELECT * FROM konsultasi WHERE $whereUser ORDER BY tanggal DESC");
 
 require_once '../includes/header.php';
 ?>

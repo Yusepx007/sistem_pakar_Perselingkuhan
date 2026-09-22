@@ -1,6 +1,6 @@
 <?php
 define('DB_HOST', '127.0.0.1');
-define('DB_PORT', 3307);
+define('DB_PORT', 3306);
 define('DB_USER', 'root');
 define('DB_PASS', '');
 define('DB_NAME', 'sistem_pakar_cf');
@@ -22,14 +22,27 @@ if ($conn->connect_error) {
 
 $conn->set_charset("utf8");
 
-// ── Helper: hitung CF kombinasi (sequential) ──
+// ── Helper: hitung CF kombinasi (sequential) — 3 kondisi Shortliffe & Buchanan ──
 function hitungCF(array $cfList): float {
     if (empty($cfList)) return 0.0;
     $hasil = (float)array_shift($cfList);
     foreach ($cfList as $cf) {
-        $hasil = $hasil + (float)$cf * (1 - $hasil);
+        $cf = (float)$cf;
+        if ($hasil >= 0 && $cf >= 0) {
+            // Kondisi 1: keduanya positif atau nol
+            $hasil = $hasil + $cf * (1 - $hasil);
+        } elseif ($hasil < 0 && $cf < 0) {
+            // Kondisi 2: keduanya negatif
+            $hasil = $hasil + $cf * (1 + $hasil);
+        } else {
+            // Kondisi 3: berlawanan tanda
+            $denom = 1 - min(abs($hasil), abs($cf));
+            $hasil = ($denom != 0) ? ($hasil + $cf) / $denom : 0.0;
+        }
+        // Clamp ke [-1, 1]
+        $hasil = max(-1.0, min(1.0, $hasil));
     }
-    return round($hasil, 3);
+    return round($hasil, 4);
 }
 
 // ── Helper: tentukan level risiko & metadata ──

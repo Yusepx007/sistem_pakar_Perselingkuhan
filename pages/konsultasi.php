@@ -34,8 +34,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $info    = levelRisiko($cfFinal);
 
         $gejalaStr = implode(',', array_column($gejalaDipilih, 'kode'));
-        $stmt = $conn->prepare("INSERT INTO konsultasi (nama_pengguna, gejala_dipilih, nilai_cf, level_risiko) VALUES (?,?,?,?)");
-        $stmt->bind_param("ssds", $namaPengguna, $gejalaStr, $cfFinal, $info['level']);
+        // Simpan user_id jika login, NULL jika tamu/anonim
+        $userId = isUser() ? (int)($_SESSION['user_id'] ?? 0) : null;
+        if ($userId) {
+            $stmt = $conn->prepare("INSERT INTO konsultasi (nama_pengguna, gejala_dipilih, nilai_cf, level_risiko, user_id) VALUES (?,?,?,?,?)");
+            $stmt->bind_param("ssdsi", $namaPengguna, $gejalaStr, $cfFinal, $info['level'], $userId);
+        } else {
+            $stmt = $conn->prepare("INSERT INTO konsultasi (nama_pengguna, gejala_dipilih, nilai_cf, level_risiko) VALUES (?,?,?,?)");
+            $stmt->bind_param("ssds", $namaPengguna, $gejalaStr, $cfFinal, $info['level']);
+        }
         $stmt->execute();
 
         $hasil = [
@@ -108,10 +115,18 @@ require_once '../includes/header.php';
             <?php
             $cfKombinasi = 0.0;
             foreach ($hasil['gejala'] as $i => $g):
-                $cfKombinasi = ($i === 0)
-                    ? (float)$g['cf']
-                    : $cfKombinasi + (float)$g['cf'] * (1 - $cfKombinasi);
-                $cfKombinasi = round($cfKombinasi, 3);
+                $cfNeu = (float)$g['cf'];
+                if ($i === 0) {
+                    $cfKombinasi = $cfNeu;
+                } elseif ($cfKombinasi >= 0 && $cfNeu >= 0) {
+                    $cfKombinasi = $cfKombinasi + $cfNeu * (1 - $cfKombinasi);
+                } elseif ($cfKombinasi < 0 && $cfNeu < 0) {
+                    $cfKombinasi = $cfKombinasi + $cfNeu * (1 + $cfKombinasi);
+                } else {
+                    $denom = 1 - min(abs($cfKombinasi), abs($cfNeu));
+                    $cfKombinasi = ($denom != 0) ? ($cfKombinasi + $cfNeu) / $denom : 0.0;
+                }
+                $cfKombinasi = round(max(-1.0, min(1.0, $cfKombinasi)), 4);
                 $cfGVal = (float)$g['cf'];
             ?>
                 <tr>
@@ -220,7 +235,12 @@ require_once '../includes/header.php';
 
 </form>
 
-
+<div class="alert alert-warning">
+    <span class="alert-icon"><i class="fas fa-triangle-exclamation"></i></span>
+    <div>
+        <strong>Perhatian:</strong> Hasil analisis sistem ini bersifat <em>indikatif</em> — merupakan alat bantu identifikasi awal, bukan penentu keputusan akhir. Jangan mengambil kesimpulan sepihak hanya berdasarkan hasil ini. Segera konsultasikan kepada <strong>psikolog atau konselor hubungan</strong> yang profesional apabila diperlukan.
+    </div>
+</div>
 <?php endif; ?>
 
 <script>
@@ -246,13 +266,25 @@ function updateCounter(cb) {
 
     const cfList = Object.values(selectedCFs);
     if (cfList.length > 0) {
+        // Fungsi kombinasi CF: 3 kondisi Shortliffe & Buchanan
+        function combineCF(old, neu) {
+            if (old >= 0 && neu >= 0) {
+                return old + neu * (1 - old);
+            } else if (old < 0 && neu < 0) {
+                return old + neu * (1 + old);
+            } else {
+                const denom = 1 - Math.min(Math.abs(old), Math.abs(neu));
+                return denom !== 0 ? (old + neu) / denom : 0;
+            }
+        }
         let est = cfList[0];
         for (let i = 1; i < cfList.length; i++) {
-            est = est + cfList[i] * (1 - est);
+            est = combineCF(est, cfList[i]);
+            est = Math.max(-1, Math.min(1, est));
         }
         const estEl = document.getElementById('estCF');
         estEl.style.display = 'inline';
-        estEl.textContent = '≈ CF ' + est.toFixed(3);
+        estEl.textContent = '≈ CF ' + est.toFixed(4);
     } else {
         document.getElementById('estCF').style.display = 'none';
     }

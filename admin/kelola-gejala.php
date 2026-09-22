@@ -66,7 +66,7 @@ if (isset($_GET['hapus']) && is_numeric($_GET['hapus'])) {
     header('Location: kelola-gejala.php?pesan=hapus');
     exit;
 }
-if ($_GET['pesan'] ?? '' === 'hapus') {
+if (($_GET['pesan'] ?? '') === 'hapus') {
     $pesan = 'Gejala berhasil dihapus.';
 }
 

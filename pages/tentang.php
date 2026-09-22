@@ -42,8 +42,15 @@ require_once '../includes/header.php';
         <br>
         <div class="info-label">Formula Dasar</div>
         <div class="formula-box">CF(H, E) = MB(H, E) &minus; MD(H, E)</div>
-        <div class="info-label" style="margin-top:12px;">Formula Kombinasi (Sequential)</div>
-        <div class="formula-box">CF_kom = CF_lama + CF_baru &times; (1 &minus; CF_lama)</div>
+        <div class="info-label" style="margin-top:12px;">Formula Kombinasi Sequential (3 Kondisi)</div>
+        <div class="formula-box" style="font-size:0.85rem;text-align:left;padding:14px 18px;">
+            <div style="margin-bottom:8px;"><span style="color:#6ee7b7;font-weight:700;">[1]</span> Jika CF_lama &ge; 0 <em>dan</em> CF_baru &ge; 0 :<br>
+            &nbsp;&nbsp;&nbsp;CF_kom = CF_lama + CF_baru &times; (1 &minus; CF_lama)</div>
+            <div style="margin-bottom:8px;"><span style="color:#fcd34d;font-weight:700;">[2]</span> Jika CF_lama &lt; 0 <em>dan</em> CF_baru &lt; 0 :<br>
+            &nbsp;&nbsp;&nbsp;CF_kom = CF_lama + CF_baru &times; (1 + CF_lama)</div>
+            <div><span style="color:#fda4af;font-weight:700;">[3]</span> Jika berlawanan tanda :<br>
+            &nbsp;&nbsp;&nbsp;CF_kom = (CF_lama + CF_baru) &divide; (1 &minus; min(|CF_lama|, |CF_baru|))</div>
+        </div>
         <ul class="tentang-list" style="padding-left:20px;margin-top:16px;list-style:disc;">
             <li><strong>MB</strong> = Measure of Belief &mdash; ukuran kepercayaan pakar (0 s.d. 1)</li>
             <li><strong>MD</strong> = Measure of Disbelief &mdash; ukuran ketidakpercayaan pakar (0 s.d. 1)</li>
