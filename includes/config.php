@@ -156,4 +156,17 @@ function currentUserName(): string {
     if (isUser()) return $_SESSION['user_nama'] ?? 'Pengguna';
     return 'Tamu';
 }
+
+// ── Helper: mapping nama anonim untuk hasil tampilan admin (Anonim 1, Anonim 2, dst) ──
+function getAnonMap(mysqli $conn): array {
+    $anonMap = [];
+    $q = $conn->query("SELECT id FROM konsultasi WHERE LOWER(TRIM(nama_pengguna)) = 'anonim' OR nama_pengguna IS NULL OR TRIM(nama_pengguna) = '' ORDER BY id ASC");
+    if ($q) {
+        $no = 1;
+        while ($row = $q->fetch_assoc()) {
+            $anonMap[$row['id']] = 'Anonim ' . $no++;
+        }
+    }
+    return $anonMap;
+}
 ?>

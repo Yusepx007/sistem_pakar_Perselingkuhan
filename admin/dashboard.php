@@ -31,6 +31,7 @@ while ($r = $qDist->fetch_assoc()) {
 }
 
 $recentQ = $conn->query("SELECT * FROM konsultasi ORDER BY tanggal DESC LIMIT 8");
+$anonMap = getAnonMap($conn);
 
 require_once '../includes/header.php';
 ?>
@@ -189,9 +190,12 @@ require_once '../includes/header.php';
             <?php while ($row = $recentQ->fetch_assoc()):
                 $kodes = array_filter(explode(',', $row['gejala_dipilih']));
                 $cfVal = (float)$row['nilai_cf'];
+                $namaDisplay = (strcasecmp(trim($row['nama_pengguna'] ?? ''), 'anonim') === 0 || trim($row['nama_pengguna'] ?? '') === '')
+                    ? ($anonMap[$row['id']] ?? 'Anonim')
+                    : $row['nama_pengguna'];
             ?>
                 <tr>
-                    <td style="font-weight:600;"><?= htmlspecialchars($row['nama_pengguna']) ?></td>
+                    <td style="font-weight:600;"><?= htmlspecialchars($namaDisplay) ?></td>
                     <td>
                         <div style="display:flex;flex-wrap:wrap;gap:3px;max-width:180px;">
                         <?php foreach (array_slice($kodes, 0, 4) as $k): ?>

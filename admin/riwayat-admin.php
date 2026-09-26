@@ -42,6 +42,7 @@ $total     = $conn->query("SELECT COUNT(*) AS n FROM konsultasi $where")->fetch_
 $totalPage = max(1, ceil($total / $perPage));
 
 $result = $conn->query("SELECT * FROM konsultasi $where ORDER BY tanggal DESC LIMIT $perPage OFFSET $offset");
+$anonMap = getAnonMap($conn);
 
 $avgCF     = $conn->query("SELECT AVG(nilai_cf) AS avg FROM konsultasi")->fetch_assoc()['avg'] ?? 0;
 $totalHigh = $conn->query("SELECT COUNT(*) AS n FROM konsultasi WHERE level_risiko IN ('Risiko Tinggi','Risiko Sangat Tinggi')")->fetch_assoc()['n'];
@@ -147,10 +148,13 @@ require_once '../includes/header.php';
                 $kodelist = array_filter(explode(',', $row['gejala_dipilih']));
                 $color    = riskColor($row['level_risiko']);
                 $cfVal    = (float)$row['nilai_cf'];
+                $namaDisplay = (strcasecmp(trim($row['nama_pengguna'] ?? ''), 'anonim') === 0 || trim($row['nama_pengguna'] ?? '') === '')
+                    ? ($anonMap[$row['id']] ?? 'Anonim')
+                    : $row['nama_pengguna'];
             ?>
                 <tr>
                     <td class="td-center" style="color:var(--text-muted);font-size:0.82rem;"><?= $no++ ?></td>
-                    <td><span style="font-weight:600;color:#e2e8f0;"><?= htmlspecialchars($row['nama_pengguna']) ?></span></td>
+                    <td><span style="font-weight:600;color:#e2e8f0;"><?= htmlspecialchars($namaDisplay) ?></span></td>
                     <td>
                         <div style="display:flex;flex-wrap:wrap;gap:4px;max-width:200px;">
                         <?php foreach ($kodelist as $kode): ?>
